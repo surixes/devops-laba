@@ -1,0 +1,11 @@
+---
+- name: Deploy Metrics Server
+  hosts: all
+  become: yes
+  vars:
+    app_dir: /opt/metrics_server
+    repo_url: https://github.com/surixes/devops-laba.git
+    service_name: server
+
+  roles:
+    - app

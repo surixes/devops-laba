@@ -1,0 +1,12 @@
+[Unit]
+Description=Prometheus Python server
+After=network.target
+
+[Service]
+User=argoniam
+WorkingDirectory=~/devops-laba/
+ExecStart=/usr/bin/python3 ~/devops-laba/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/server.service
