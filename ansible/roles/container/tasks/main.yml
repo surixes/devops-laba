@@ -1,10 +1,24 @@
 ---
-- name: Add Docker CE repository
+- name: Update all packages
   dnf:
-    name: https://download.docker.com/linux/centos/docker-ce.repo
+    name: "*"
+    state: latest
+    update_cache: yes
+  tags: update
+
+- name: Add Docker CE repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
-    state: present
+    mode: 0644
   tags: docker_repo
+  become: yes
+
+- name: Update DNF cache
+  dnf:
+    update_cache: yes
+  tags: docker_repo
+  become: yes
 
 - name: Install Docker CE
   dnf:
@@ -14,6 +28,16 @@
       - containerd.io
     state: present
   tags: docker_install
+  become: yes
+
+- name: Install required packages
+  dnf:
+    name:
+      - python3-pip
+      - git
+    state: present
+  tags: packages
+
 
 - name: Start and enable Docker service
   systemd:
@@ -21,6 +45,7 @@
     state: started
     enabled: yes
   tags: docker
+  become: yes
 
 - name: Create directory for Docker
   file:
@@ -30,15 +55,27 @@
 
 - name: Copy Dockerfile
   copy:
-    src: ansible/roles/container/files/Dockerfile
+    src: roles/container/files/Dockerfile
     dest: "{{ app_dir }}/Dockerfile"
   tags: docker
 
 - name: Copy application code
   copy:
-    src: ansible/roles/container/files/server.py
+    src: roles/container/files/server.py
     dest: "{{ app_dir }}/server.py"
   tags: docker
+
+- name: Copy dependencies
+  copy:
+    src: ../requirements.txt
+    dest: "{{ app_dir }}/requirements.txt"
+  tags: docker
+
+- name: Install Python dependencies
+  pip:
+    requirements: "{{ app_dir }}/requirements.txt"
+    executable: pip3
+  tags: pip
 
 - name: Build container image
   community.docker.docker_image:
@@ -49,6 +86,7 @@
       path: "{{ app_dir }}"
     state: present
   tags: docker
+  become: yes
 
 - name: Run container
   community.docker.docker_container:
@@ -60,3 +98,4 @@
     restart_policy: always
     detach: yes
   tags: docker
+  become: yes
