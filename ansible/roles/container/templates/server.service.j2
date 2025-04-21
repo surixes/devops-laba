@@ -1,0 +1,12 @@
+[Unit]
+Description=Prometheus Python server
+After=network.target
+
+[Service]
+User=argoniam
+WorkingDirectory=/opt/metrics_server
+ExecStart=/usr/bin/python3 /opt/metrics_server/ansible/roles/container/files/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

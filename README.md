@@ -3,52 +3,49 @@
 > Необходимо развернуть микросервис на виртуальной машине (ВМ), используя систему управления конфигурациями и описать выполненные действия.
 
 1. Для начала необходимо установить `Virtual Box` и `Vagrant`. Инструкции по установке можно найти на официальных сайтах:
+
    - [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
    - [Vagrant](https://developer.hashicorp.com/vagrant/install)
 
-2. Будем использовать ОС `Rocky Linux`, которую можно скачать по [ссылке](https://rockylinux.org/ru-RU/download)
+2. Установим нужные зависимости для работы с Vagrant:
 
-3. Установим нужные зависимости для работы с Vagrant:
    ```bash
-   sudo apt install vagrant Vagrant
+   sudo apt install vagrant
    sudo apt install virtualbox
    ```
-    # хз надо ли (sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils)
 
 3. Инициализируем Vagrant в папке проекта:
+
    ```bash
    vagrant init rockylinux/9 --box-version 5.0.0
    ```
-    Это создаст файл `Vagrantfile`, в котором нужно настроить параметры виртуальной машины.
 
-4. Настроим Vagrantfile:
-   ```ruby
-   Vagrant.configure("2") do |config|
-   config.vm.box = "rockylinux/9"
-   config.vm.box_version = "5.0.0"
-   config.vm.network "forwarded_port", guest: 8080, host: 8080
+4. Нужно выбрать способ запуска микросервиса
+   Если мы хотим запустить микросервис стандартно, то просто переходим к 5 пункту.
+   Если мы хотим запустить микросервис в контейнере, то нужно в файле `VagrantFile` заменить строку:
+   `ansible.playbook = "ansible/playbook.yml"` на `ansible.playbook = "ansible/docker.yml"`
 
-      config.vm.provider "virtualbox" do |vb|
-         vb.name = "microservice1"
-         vb.memory = "1024"
-         vb.cpus = 1
-      end
+5. Запустим развертывание сервера:
 
-      config.vm.provision "ansible" do |ansible|
-         ansible.playbook = "provision.yml"
-         ansible.compatibility_mode = "2.0"
-      end
-   end
+   ```bash
+   vagrant up --provider=virtualbox
    ```
 
-5. Установим Ansible:
-   ```bash
-   sudo apt install ansible
-   ```
+   После этого будет долгое разверывание и настройка виртуальной машины, и установка нужных зависимостей.
 
-6. Создадим папку `ansible` и файл `playbook.yml`:
-   ```bash
-   mkdir ansible
-   cd ansible
-   touch playbook.yml
+6. Для проверки работы нашего сервера, подключаемся к нему по `ssh`:
+
+```bash
+  vagrant ssh
+```
+
+7. И проверим `curl localhost:8080`
+   Вывод:
+   ```
+   # HELP python_gc_objects_collected_total Objects collected during gc
+   # TYPE python_gc_objects_collected_total counter
+   python_gc_objects_collected_total{generation="0"} 391.0
+   python_gc_objects_collected_total{generation="1"} 0.0
+   python_gc_objects_collected_total{generation="2"} 0.0
+   ...
    ```

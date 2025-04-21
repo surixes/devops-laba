@@ -20,44 +20,12 @@ Vagrant.configure("2") do |config|
     vb.memory = "2048"
   end
 
-  # config.vm.provision "ansible" do |ansible|
-  #   ansible.playbook = "ansible/playbook.yml"
-  #   ansible.inventory_path = "ansible/inventory.ini"
-  #   ansible.compatibility_mode = "2.0"
-  # end
-
-  # config.vm.provision "docker" do |d|
-  #   d.build_image <<-DOCKERFILE
-  #     FROM python:3.9
-  #     RUN pip install ansible
-  #   DOCKERFILE
-  # end
-
   config.vm.provision "shell", inline: <<-SHELL
-    # Установка EPEL и Ansible
-    sudo dnf install -y epel-release
-    sudo dnf install -y ansible 
-    
-    # Проверка версии Ansible
-    echo "Ansible version:"
-    ansible --version
-
-    # Установка Docker
-    sudo dnf install -y dnf-plugins-core
-    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo dnf install -y docker-ce docker-ce-cli containerd.io
-    sudo systemctl enable --now docker
-    
-    # Добавление пользователя в группу docker (требует перелогина)
-    sudo usermod -aG docker vagrant
-    newgrp docker 2>/dev/null || true  # Применяем изменения группы без перезагрузки
-
-    # Запуск playbook с явным указанием пути
-    echo "Starting Ansible playbook..."
-    /usr/bin/ansible-playbook \
-      /vagrant/ansible/playbook.yml \
-      -i /vagrant/ansible/inventory.ini \
-      -e "ansible_user=vagrant"
+    sudo dnf install -y python3
   SHELL
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "ansible/playbook.yml"
+  end
 
 end

@@ -1,0 +1,62 @@
+---
+- name: Add Docker CE repository
+  dnf:
+    name: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    state: present
+  tags: docker_repo
+
+- name: Install Docker CE
+  dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+  tags: docker_install
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  tags: docker
+
+- name: Create directory for Docker
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+  tags: docker
+
+- name: Copy Dockerfile
+  copy:
+    src: ansible/roles/container/files/Dockerfile
+    dest: "{{ app_dir }}/Dockerfile"
+  tags: docker
+
+- name: Copy application code
+  copy:
+    src: ansible/roles/container/files/server.py
+    dest: "{{ app_dir }}/server.py"
+  tags: docker
+
+- name: Build container image
+  community.docker.docker_image:
+    name: "metrics-server"
+    tag: "latest"
+    source: build
+    build:
+      path: "{{ app_dir }}"
+    state: present
+  tags: docker
+
+- name: Run container
+  community.docker.docker_container:
+    name: metrics-server
+    image: "metrics-server:latest"
+    ports:
+      - "8080:8080"
+    state: started
+    restart_policy: always
+    detach: yes
+  tags: docker
