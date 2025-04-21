@@ -39,7 +39,7 @@
   git:
     repo: "{{ repo_url }}"
     dest: "{{ app_dir }}"
-    version: develop
+    version: main
     force: yes
   tags: clone
 
