@@ -1,6 +1,12 @@
 # Задание
 
 > Необходимо развернуть микросервис на виртуальной машине (ВМ), используя систему управления конфигурациями и описать выполненные действия.
+> Стек:
+> VirtualBox
+> Vagrant
+> Ansible
+> Python
+> Docker
 
 1. Для начала необходимо установить `Virtual Box` и `Vagrant`. Инструкции по установке можно найти на официальных сайтах:
 
@@ -35,12 +41,13 @@
 
 6. Для проверки работы нашего сервера, подключаемся к нему по `ssh`:
 
-```bash
-  vagrant ssh
-```
+   ```bash
+   vagrant ssh
+   ```
 
 7. И проверим `curl localhost:8080`
    Вывод:
+   
    ```
    # HELP python_gc_objects_collected_total Objects collected during gc
    # TYPE python_gc_objects_collected_total counter
